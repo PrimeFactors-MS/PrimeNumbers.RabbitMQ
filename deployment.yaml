@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-msprimes-service
+  labels:
+    app: rabbitmq-msprimes-service
+    project: prime-numbers
+spec:
+  type: LoadBalancer
+  ports:
+  - name: web-ui
+    port: 30100
+    targetPort: 15672
+    nodePort: 30200
+  - name: amqp
+    port: 30101
+    targetPort: 5672
+    nodePort: 30201
+  selector:
+    app: rabbitmq-msprimes
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq-msprimes
+spec:
+  selector:
+    matchLabels:
+      app: rabbitmq-msprimes
+  template:
+    metadata:
+      labels:
+        app: rabbitmq-msprimes
+        project: prime-numbers
+    spec:
+      containers:
+      - name: rabbitmq-msprimes
+        image: rabbitmq-msprimes:v1
+        imagePullPolicy: Never
+        resources:
+          limits:
+            memory: "1024Mi"
+            cpu: "100m"
+        ports:
+        - containerPort: 80
